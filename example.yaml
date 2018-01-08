@@ -1,0 +1,31 @@
+# CLI "markdown language" possible example
+
+- This is a regular string with a newline\n
+- This does not have a newline, but
+-  # this object is red
+  raw: this is red
+  color: red
+- , but this is NOT red!\n
+- "Bold is easy like this: "
+-
+  raw: "see I'm bold"
+  bold: true
+- and so is multiple settings
+-
+  raw: bold AND green!
+  bold: true
+  color: green
+
+# Table
+-
+  - ["header col1", "header col2"]
+  - ["row col1", {raw: "row col2", color: green}]
+- [
+    "you can do lots of things all in ", {raw: "a few lines", bold: true},
+    "fairly ", {raw: "easily!", color: green},
+]
+
+# The above gets rendered something like
+# This is a regular string with a newline
+# This does not have a newline, but <font color=red>this is red</font> but this is NOT red!
+# Bold is easy like this: <b>see I'm bold</b> and so is multiple settings <b><font color=green>bold AND green!</font></b>

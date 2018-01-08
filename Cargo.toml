@@ -1,0 +1,9 @@
+[package]
+authors = ["Garrett Berg <googberg@gmail.com>"]
+name = "clml"
+version = "0.1.0"
+
+[dependencies]
+serde = "1.0.27"
+serde_yaml = "0.7.3"
+std_prelude = "0.2.9"
