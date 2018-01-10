@@ -64,7 +64,7 @@ static BASIC_YAML_RENDERED: &[u8] = b"\
 some plain text\x1b[1m bold text \x1b[0m\x1b[31mred-only\x1b[0m\x1b[32m green-only\n\
 \x1b[0m\x1b[1;3;32mdefined in multiple lines with multiple things\n\
 is multiple lines\x1b[0m\n\
-all in \\x1b[1mone line!!!\\x1b[0m\
+all in \x1b[1mone line!!!\x1b[0m\
 ";
 
 #[cfg(not(unix))]

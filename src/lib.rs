@@ -103,10 +103,10 @@ pub fn paint<W: io::Write>(w: &mut W, items: &[El]) -> io::Result<()> {
 ///
 pub fn eprint_diff(expected: &[u8], result: &[u8]) -> (String, String) {
     let mut expected_repr: Vec<u8> = Vec::new();
-    repr(&mut expected_repr, expected).unwrap();
+    write_repr(&mut expected_repr, expected).unwrap();
 
     let mut result_repr: Vec<u8> = Vec::new();
-    repr(&mut result_repr, result).unwrap();
+    write_repr(&mut result_repr, result).unwrap();
 
     if result == expected {
         return (
@@ -141,17 +141,31 @@ pub fn eprint_diff(expected: &[u8], result: &[u8]) -> (String, String) {
 ///
 /// Represent a series of bytes with proper escape codes for
 /// copy/pasting into rust surounded by `b"..."`.
-pub fn repr<W: io::Write>(w: &mut W, bytes: &[u8]) -> io::Result<()> {
+pub fn write_repr<W: io::Write>(w: &mut W, bytes: &[u8]) -> io::Result<()> {
     for b in bytes {
         match *b {
             b'\t' => write!(w, r"\t")?,
             b'\n' => write!(w, r"\n")?,
             b'\r' => write!(w, r"\r")?,
+            b'\\' => write!(w, r"\\")?,
             32...126 => write!(w, "{}", *b as char)?, // visible ASCII
             _ => write!(w, r"\x{:0>2x}", b)?,
         }
     }
     Ok(())
+}
+
+#[test]
+fn sanity_repr() {
+    let r = |b| {
+        let mut w: Vec<u8> = Vec::new();
+        write_repr(&mut w, b).unwrap();
+        String::from_utf8(w).unwrap()
+    };
+    assert_eq!(r"foo", r(b"foo"));
+    assert_eq!(r"\\", r(b"\\"));
+    assert_eq!(r"\x8a", r(b"\x8a"));
+    assert_eq!(r"\x8a", r(&[0x8a]));
 }
 
 /// Helper function to make tests easier for others.
@@ -160,14 +174,14 @@ pub fn repr<W: io::Write>(w: &mut W, bytes: &[u8]) -> io::Result<()> {
 ///
 /// See [`repr`](fn.repr.html)
 pub fn print_repr(bytes: &[u8]) {
-    repr(&mut io::stdout(), bytes).expect("print_repr");
+    write_repr(&mut io::stdout(), bytes).expect("print_repr");
 }
 
 /// Print the byte representation directly to stderr.
 ///
 /// See [`repr`](fn.repr.html)
 pub fn eprint_repr(bytes: &[u8]) {
-    repr(&mut io::stderr(), bytes).expect("eprint_repr");
+    write_repr(&mut io::stderr(), bytes).expect("eprint_repr");
 }
 
 #[derive(Debug, Eq, PartialEq)]

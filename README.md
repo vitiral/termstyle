@@ -1,7 +1,9 @@
-**termstyle** is a library that aims to make it easy to build **formatted** and
-**styled** command line applications.
+- **description**: create and test the style and formatting of text in your
+  terminal applications
+- **docs**: https://docs.rs/termstyle
 
-It supports the following "elements":
+**termstyle** is a library that aims to make it easy to build (and test)
+**formatted** and **styled** command line applications. It supports the following "elements":
 - **styled-text**
     - italic
     - bold
@@ -9,7 +11,7 @@ It supports the following "elements":
 - **tables**: composed of styled text with identical width columns
 
 Text can be constructed programatically by pushing tokens onto a vector and
-then `paint()`ing them, or by parsing a yaml file. This allows you to easily
+then `paint()`ing them, or by parsing a `yaml` file. This allows you to easily
 write unit tests for your command line applications.
 
 ## Example
@@ -41,7 +43,6 @@ Given the following config (written in yaml):
 ```
 
 Use the following to render it:
-
 ```rust
 let els = termstyle::from_str(serde_yaml::from_str, example).unwrap();
 termstyle::paint(&mut ::std::io::stdout(), &els).unwrap();
@@ -52,7 +53,8 @@ Which gets rendered as:
 ![rendered](img/example.png)
 
 You can also create the "stream of elements" using the types provided by the
-library.  For more information, see the library docs.
+library.  For more information, see the
+[library docs](https://docs.rs/termstyle).
 
 
 # LICENSE
