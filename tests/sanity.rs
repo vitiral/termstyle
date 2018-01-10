@@ -33,11 +33,11 @@ fn sanity_deserialize() {
     let items = from_yaml(BASIC_YAML);
     let expected = vec![
         El::plain("some plain text".into()),
-        El::Text(Text::plain(" bold text ".into()).bold()),
-        El::Text(Text::plain("red-only".into()).color(Color::Red)),
-        El::Text(Text::plain(" green-only\n".into()).color(Color::Green)),
+        El::Text(Text::new(" bold text ".into()).bold()),
+        El::Text(Text::new("red-only".into()).color(Color::Red)),
+        El::Text(Text::new(" green-only\n".into()).color(Color::Green)),
         El::Text(
-            Text::plain(
+            Text::new(
                 "\
                  defined in multiple lines with multiple things\n\
                  is multiple lines"
@@ -46,8 +46,8 @@ fn sanity_deserialize() {
                 .bold()
                 .color(Color::Green),
         ),
-        El::Text(Text::plain("\nall in ".into())),
-        El::Text(Text::plain("one line!!!".into()).bold()),
+        El::Text(Text::new("\nall in ".into())),
+        El::Text(Text::new("one line!!!".into()).bold()),
     ];
     assert_eq!(items, expected);
 }
@@ -89,13 +89,13 @@ fn sanity_table() {
         El::Table(Table::new(vec![
             // header
             vec![
-                vec![Text::plain("header1".into())],
-                vec![Text::plain("header2".into())],
+                vec![Text::new("header1".into())],
+                vec![Text::new("header2".into())],
             ],
             // row1
             vec![
-                vec![Text::plain("col1".into())],
-                vec![Text::plain("col2".into())],
+                vec![Text::new("col1".into())],
+                vec![Text::new("col2".into())],
             ],
         ])),
     ];

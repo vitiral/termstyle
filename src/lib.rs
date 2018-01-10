@@ -22,9 +22,9 @@
 //! // This could have also been programmatically constructed like this
 //! let expected = vec![
 //!     El::plain("plain ".into()),
-//!     El::Text(Text::plain("and bold".into()).bold()),
+//!     El::Text(Text::new("and bold".into()).bold()),
 //!     El::plain("plain ".into()),
-//!     El::Text(Text::plain("and red".into()).color(Color::Red)),
+//!     El::Text(Text::new("and red".into()).color(Color::Red)),
 //! ];
 //!
 //! assert_eq!(els, expected);
@@ -35,7 +35,8 @@
 //! # }
 //! ```
 //!
-//! Tables are also supported with styled text in the cells. See the documentation for `Table`
+//! # Styled Tables
+//! See the documentation for [`Table`](struct.Table.html)
 
 extern crate ansi_term;
 extern crate serde;
@@ -59,7 +60,7 @@ where
     Ok(out)
 }
 
-/// Paint the given items as a vector of bytes.
+/// Paint the given elements into the writer.
 ///
 /// Useful after loading them with `from_str`. Can also be useful if you build your elements as a
 /// `Vec` and want to paint them all in one go.
@@ -72,6 +73,8 @@ pub fn paint<W: io::Write>(w: &mut W, items: &[El]) -> io::Result<()> {
     Ok(())
 }
 
+/// Helper function to make tests easier for others.
+///
 /// If a diff exists, render the full form of both and their "repr" version to stderr, then return
 /// their human readable and copy-pastable renderings.
 ///
@@ -127,6 +130,8 @@ pub fn eprint_diff(expected: &[u8], result: &[u8]) -> (String, String) {
     )
 }
 
+/// Helper function to make tests easier for others.
+///
 /// Represent a series of bytes with proper escape codes for
 /// copy/pasting into rust surounded by `b"..."`.
 pub fn repr<W: io::Write>(w: &mut W, bytes: &[u8]) -> io::Result<()> {
@@ -142,16 +147,18 @@ pub fn repr<W: io::Write>(w: &mut W, bytes: &[u8]) -> io::Result<()> {
     Ok(())
 }
 
+/// Helper function to make tests easier for others.
+///
 /// Print the byte representation directly to stdout.
 ///
-/// See `repr`.
+/// See [`repr`](fn.repr.html)
 pub fn print_repr(bytes: &[u8]) {
     repr(&mut io::stdout(), bytes).expect("print_repr");
 }
 
 /// Print the byte representation directly to stderr.
 ///
-/// See `repr`.
+/// See [`repr`](fn.repr.html)
 pub fn eprint_repr(bytes: &[u8]) {
     repr(&mut io::stderr(), bytes).expect("eprint_repr");
 }
@@ -161,13 +168,50 @@ pub fn eprint_repr(bytes: &[u8]) {
 ///
 /// Elements are simply struts with various properties which you can build directly or parse from
 /// text.
-/// ```
 pub enum El {
     Text(Text),
     Table(Table),
 }
 
 #[derive(Debug, Eq, PartialEq)]
+/// A paintable Table
+///
+/// The type can be thought of as `Rows[Cols[Cells[Text]]]`, where the items inside a `Cell`
+/// will be concatenated together (alowing mixed formatting to exist within a table's cell).
+///
+/// Warning: do not use `\t` in your text, as this currently uses tabwriter under the hood.
+///
+/// # Examples
+/// ```rust
+/// # extern crate termstyle;
+/// use termstyle::*;
+///
+/// # fn main() {
+/// let rows = vec![
+///     // header
+///     vec![
+///         vec![Text::new("header1".into())],
+///         vec![Text::new("header2".into())],
+///     ],
+///     // row1
+///     vec![
+///         vec![Text::new("col1".into())],
+///         vec![Text::new("col2".into())],
+///     ],
+/// ];
+/// let example = Table::new(rows);
+///
+/// let expected = "\
+/// header1 header2
+/// col1    col2
+/// ";
+///
+/// let mut result = Vec::new();
+/// example.paint(&mut result);
+///
+/// assert_eq!(expected.as_bytes(), result.as_slice());
+/// # }
+/// ```
 pub struct Table {
     table: Vec<Vec<Vec<Text>>>,
 }
@@ -229,10 +273,10 @@ impl Color {
 impl El {
     /// Instantiate the element as just plain text.
     ///
-    /// This is a shortcut method for `El::Text(Text::plain(t))`. In general you should use
+    /// This is a shortcut method for `El::Text(Text::new(t))`. In general you should use
     /// `El::Text` or `El::Table` instead.
     pub fn plain(t: String) -> El {
-        El::Text(Text::plain(t))
+        El::Text(Text::new(t))
     }
 
     /// Paint (render) the item into the writer.
@@ -245,44 +289,10 @@ impl El {
 }
 
 impl Table {
-    /// Instantiate a new table.
+    /// Create a new table from the given rows.
     ///
     /// The type can be thought of as `Rows[Cols[Cells[Text]]]`, where the items inside a `Cell`
     /// will be concatenated together (alowing mixed formatting to exist within a table's cell).
-    ///
-    /// Warning: do not use `\t` in your text, as this currently uses tabwriter under the hood.
-    ///
-    /// # Examples
-    /// ```rust
-    /// # extern crate termstyle;
-    /// use termstyle::*;
-    ///
-    /// # fn main() {
-    /// let rows = vec![
-    ///     // header
-    ///     vec![
-    ///         vec![Text::plain("header1".into())],
-    ///         vec![Text::plain("header2".into())],
-    ///     ],
-    ///     // row1
-    ///     vec![
-    ///         vec![Text::plain("col1".into())],
-    ///         vec![Text::plain("col2".into())],
-    ///     ],
-    /// ];
-    /// let example = Table::new(rows);
-    ///
-    /// let expected = "\
-    /// header1 header2
-    /// col1    col2
-    /// ";
-    ///
-    /// let mut result = Vec::new();
-    /// example.paint(&mut result);
-    ///
-    /// assert_eq!(expected.as_bytes(), result.as_slice());
-    /// # }
-    /// ```
     pub fn new(table: Vec<Vec<Vec<Text>>>) -> Table {
         Table { table: table }
     }
@@ -318,7 +328,7 @@ impl Text {
     /// use termstyle::{Color, Text};
     ///
     /// # fn main() {
-    /// let t = Text::plain("bold and blue text".into())
+    /// let t = Text::new("bold and blue text".into())
     ///     .bold()
     ///     .color(Color::Blue);
     ///
@@ -326,7 +336,7 @@ impl Text {
     /// t.paint(&mut ::std::io::stdout()).unwrap();
     /// # }
     /// ```
-    pub fn plain(t: String) -> Text {
+    pub fn new(t: String) -> Text {
         Text {
             t: t,
             b: false,
@@ -478,7 +488,7 @@ fn flatten_texts_only(into: &mut Vec<Text>, raw: TextsRaw) {
 impl From<TextRaw> for Text {
     fn from(raw: TextRaw) -> Text {
         match raw {
-            TextRaw::Simple(t) => Text::plain(t),
+            TextRaw::Simple(t) => Text::new(t),
             TextRaw::Full(f) => f,
         }
     }
