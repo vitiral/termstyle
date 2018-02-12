@@ -1,4 +1,4 @@
-/* Copyright (c) 2017 Garrett Berg, vitiral@gmail.com
+/* Copyright (c) 2018 Garrett Berg, vitiral@gmail.com
  *
  * Licensed under the Apache License, Version 2.0, <LICENSE-APACHE or
  * http://apache.org/licenses/LICENSE-2.0> or the MIT license <LICENSE-MIT or
@@ -118,14 +118,14 @@ pub fn eprint_diff(expected: &[u8], result: &[u8]) -> (String, String) {
     eprintln!("Bytes are not equal");
     eprintln!("## EXPECTED");
     {
-        io::stderr().write(expected).unwrap();
+        io::stderr().write_all(expected).unwrap();
     }
     eprintln!("\n# RAW-EXPECTED");
     eprint_repr(expected);
 
     eprintln!("\n\n## RESULT");
     {
-        io::stderr().write(result).unwrap();
+        io::stderr().write_all(result).unwrap();
     }
     eprintln!("\n# RAW-RESULT");
     eprint_repr(result);
@@ -300,6 +300,14 @@ impl El {
         El::Text(Text::new(t))
     }
 
+    /// Recursively clears _all_ formatting.
+    pub fn set_plain(&mut self) {
+        match *self {
+            El::Text(ref mut t) => t.set_plain(),
+            El::Table(ref mut t) => t.set_plain(),
+        }
+    }
+
     /// Paint (render) the item into the writer.
     pub fn paint<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         match *self {
@@ -316,6 +324,17 @@ impl Table {
     /// will be concatenated together (alowing mixed formatting to exist within a table's cell).
     pub fn new(table: Vec<Vec<Vec<Text>>>) -> Table {
         Table { table: table }
+    }
+
+    /// Recursively clears _all_ formatting.
+    pub fn set_plain(&mut self) {
+        for row in &mut self.table {
+            for col in row {
+                for t in col {
+                    t.set_plain();
+                }
+            }
+        }
     }
 
     /// Paint the table, giving each column the same width.
@@ -432,6 +451,14 @@ impl Text {
     pub fn get_color(&self) -> Color {
         self.c
     }
+
+    /// Clears _all_ formatting.
+    pub fn set_plain(&mut self) {
+        self.b = false;
+        self.i = false;
+        self.c = Color::Plain;
+        self.bg = Color::Plain;
+    }
 }
 
 // PRIVATE: priate types and methods
@@ -502,7 +529,7 @@ fn flatten_texts(into: &mut Vec<El>, raw: TextsRaw) {
 fn flatten_texts_only(into: &mut Vec<Text>, raw: TextsRaw) {
     match raw {
         TextsRaw::Single(t) => into.push(Text::from(t)),
-        TextsRaw::Multi(mut multi) => into.extend(multi.drain(..).map(|t| Text::from(t))),
+        TextsRaw::Multi(mut multi) => into.extend(multi.drain(..).map(Text::from)),
     }
 }
 

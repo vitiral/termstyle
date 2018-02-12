@@ -1,5 +1,6 @@
 [package]
-version = "0.1.1"
+name = "termstyle"
+version = "0.1.2"
 authors = ["Garrett Berg <vitiral@gmail.com>"]
 description = """
 create and test the style and formatting of text in your terminal applications
@@ -10,7 +11,6 @@ keywords = [
     "testing",
 ]
 license = "MIT OR Apache-2.0"
-name = "termstyle"
 readme = "README.md"
 documentation = "https://docs.rs/termstyle"
 repository = "https://github.com/vitiral/termstyle"
